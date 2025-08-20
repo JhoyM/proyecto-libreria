@@ -1,0 +1,475 @@
+-- =====================================================
+-- BASE DE DATOS POSTGRESQL - SISTEMA DE GESTIÓN DE LIBRERÍA
+-- =====================================================
+
+-- Crear la base de datos
+CREATE DATABASE libreria_db
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    LC_COLLATE = 'es_ES.UTF-8'
+    LC_CTYPE = 'es_ES.UTF-8'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+
+-- Conectarse a la base de datos
+\c libreria_db;
+
+-- =====================================================
+-- TABLA: ROLES
+-- =====================================================
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    description VARCHAR(200),
+    status BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- TABLA: USUARIOS
+-- =====================================================
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    document_number VARCHAR(20) UNIQUE,
+    role_id INTEGER NOT NULL REFERENCES roles(id),
+    email_verified_at TIMESTAMP,
+    password VARCHAR(255) NOT NULL,
+    status BOOLEAN DEFAULT TRUE,
+    remember_token VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_users_document ON users(document_number);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role_id);
+
+-- =====================================================
+-- TABLA: CATEGORÍAS
+-- =====================================================
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    type VARCHAR(50) NOT NULL CHECK (type IN ('libros', 'utiles_escolares', 'oficina')),
+    status BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- TABLA: PROVEEDORES
+-- =====================================================
+CREATE TABLE suppliers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    contact_person VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT,
+    tax_id VARCHAR(20), -- RUC/NIT
+    status BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- TABLA: PRODUCTOS
+-- =====================================================
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    category_id INTEGER NOT NULL REFERENCES categories(id),
+    supplier_id INTEGER REFERENCES suppliers(id),
+    purchase_price DECIMAL(10,2) DEFAULT 0,
+    sale_price DECIMAL(10,2) NOT NULL,
+    stock INTEGER DEFAULT 0,
+    min_stock INTEGER DEFAULT 0,
+    
+    -- Campos específicos para libros
+    author VARCHAR(150),
+    publisher VARCHAR(100), -- Editorial
+    isbn VARCHAR(20),
+    publication_year INTEGER,
+    genre VARCHAR(100),
+    pages INTEGER,
+    language VARCHAR(50) DEFAULT 'Español',
+    
+    -- Campos para otros productos
+    brand VARCHAR(100), -- Marca
+    model VARCHAR(100), -- Modelo
+    color VARCHAR(50),
+    size VARCHAR(50), -- Tamaño
+    
+    image_path VARCHAR(255),
+    status BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_products_code ON products(code);
+CREATE INDEX idx_products_name ON products(name);
+CREATE INDEX idx_products_author ON products(author);
+CREATE INDEX idx_products_category ON products(category_id);
+CREATE INDEX idx_products_supplier ON products(supplier_id);
+
+-- =====================================================
+-- TABLA: CLIENTES
+-- =====================================================
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    document_type VARCHAR(20) DEFAULT 'CI' CHECK (document_type IN ('CI', 'NIT', 'Pasaporte')),
+    document_number VARCHAR(20) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT,
+    birth_date DATE,
+    customer_type VARCHAR(20) DEFAULT 'regular' CHECK (customer_type IN ('regular', 'frecuente', 'mayorista')),
+    discount_percentage DECIMAL(5,2) DEFAULT 0,
+    status BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_customers_document ON customers(document_number);
+CREATE INDEX idx_customers_name ON customers(first_name, last_name);
+
+-- =====================================================
+-- TABLA: VENTAS
+-- =====================================================
+CREATE TABLE sales (
+    id SERIAL PRIMARY KEY,
+    sale_number VARCHAR(20) UNIQUE NOT NULL,
+    customer_id INTEGER NOT NULL REFERENCES customers(id),
+    user_id INTEGER NOT NULL REFERENCES users(id), -- Vendedor
+    sale_date TIMESTAMP NOT NULL,
+    subtotal DECIMAL(12,2) NOT NULL,
+    tax_amount DECIMAL(12,2) DEFAULT 0, -- IVA u otros impuestos
+    discount_amount DECIMAL(12,2) DEFAULT 0,
+    total DECIMAL(12,2) NOT NULL,
+    payment_method VARCHAR(20) DEFAULT 'efectivo' CHECK (payment_method IN ('efectivo', 'tarjeta', 'transferencia', 'credito')),
+    status VARCHAR(20) DEFAULT 'completada' CHECK (status IN ('completada', 'anulada', 'pendiente')),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_sales_date ON sales(sale_date);
+CREATE INDEX idx_sales_customer ON sales(customer_id);
+CREATE INDEX idx_sales_user ON sales(user_id);
+CREATE INDEX idx_sales_number ON sales(sale_number);
+
+-- =====================================================
+-- TABLA: DETALLES DE VENTA
+-- =====================================================
+CREATE TABLE sale_details (
+    id SERIAL PRIMARY KEY,
+    sale_id INTEGER NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products(id),
+    quantity INTEGER NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    discount_percentage DECIMAL(5,2) DEFAULT 0,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    subtotal DECIMAL(12,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_sale_details_sale ON sale_details(sale_id);
+CREATE INDEX idx_sale_details_product ON sale_details(product_id);
+
+-- =====================================================
+-- TABLA: MOVIMIENTOS DE INVENTARIO
+-- =====================================================
+CREATE TABLE inventory_movements (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER NOT NULL REFERENCES products(id),
+    user_id INTEGER NOT NULL REFERENCES users(id), -- Usuario que realizó el movimiento
+    movement_type VARCHAR(20) NOT NULL CHECK (movement_type IN ('entrada', 'salida', 'ajuste', 'venta', 'devolucion')),
+    quantity INTEGER NOT NULL, -- Positivo para entradas, negativo para salidas
+    previous_stock INTEGER NOT NULL,
+    new_stock INTEGER NOT NULL,
+    reference VARCHAR(100), -- Número de venta, orden de compra, etc.
+    description TEXT,
+    movement_date TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_inventory_product ON inventory_movements(product_id);
+CREATE INDEX idx_inventory_date ON inventory_movements(movement_date);
+CREATE INDEX idx_inventory_type ON inventory_movements(movement_type);
+CREATE INDEX idx_inventory_user ON inventory_movements(user_id);
+
+-- =====================================================
+-- FUNCIONES PARA ACTUALIZAR TIMESTAMPS
+-- =====================================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Aplicar trigger a todas las tablas
+CREATE TRIGGER update_roles_updated_at BEFORE UPDATE ON roles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_suppliers_updated_at BEFORE UPDATE ON suppliers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON customers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_sales_updated_at BEFORE UPDATE ON sales FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_sale_details_updated_at BEFORE UPDATE ON sale_details FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_inventory_movements_updated_at BEFORE UPDATE ON inventory_movements FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- FUNCIÓN PARA ACTUALIZAR STOCK AUTOMÁTICAMENTE
+-- =====================================================
+CREATE OR REPLACE FUNCTION update_product_stock()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Actualizar stock del producto
+    UPDATE products 
+    SET stock = NEW.new_stock 
+    WHERE id = NEW.product_id;
+    
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_stock_trigger 
+    AFTER INSERT ON inventory_movements 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_product_stock();
+
+-- =====================================================
+-- DATOS INICIALES - ROLES
+-- =====================================================
+INSERT INTO roles (name, description, status) VALUES
+('Administrador', 'Acceso completo al sistema', true),
+('Vendedor', 'Acceso a ventas y gestión de clientes', true),
+('Almacenero', 'Acceso a inventario y productos', true);
+
+-- =====================================================
+-- DATOS INICIALES - CATEGORÍAS
+-- =====================================================
+INSERT INTO categories (name, description, type, status) VALUES
+-- Libros
+('Literatura', 'Libros de literatura general', 'libros', true),
+('Educación', 'Libros educativos y de texto', 'libros', true),
+('Infantil', 'Libros para niños', 'libros', true),
+('Técnicos', 'Libros técnicos y profesionales', 'libros', true),
+('Ciencias', 'Libros de ciencias exactas', 'libros', true),
+('Historia', 'Libros de historia y biografías', 'libros', true),
+
+-- Útiles Escolares
+('Cuadernos', 'Cuadernos de todo tipo', 'utiles_escolares', true),
+('Lápices y Bolígrafos', 'Material de escritura', 'utiles_escolares', true),
+('Material de Arte', 'Pinturas, pinceles, etc.', 'utiles_escolares', true),
+('Calculadoras', 'Calculadoras científicas y básicas', 'utiles_escolares', true),
+('Mochilas y Cartucheras', 'Accesorios escolares', 'utiles_escolares', true),
+
+-- Oficina
+('Archivadores', 'Material para archivo', 'oficina', true),
+('Papelería Oficina', 'Papel, sobres, etc.', 'oficina', true),
+('Artículos de Escritorio', 'Grapadoras, perforadoras, etc.', 'oficina', true),
+('Carpetas y Folders', 'Material de organización', 'oficina', true);
+
+-- =====================================================
+-- DATOS INICIALES - PROVEEDORES
+-- =====================================================
+INSERT INTO suppliers (name, contact_person, phone, email, address, tax_id, status) VALUES
+('Editorial Santillana', 'María González', '70123456', 'contacto@santillana.com.bo', 'Av. Arce 123, La Paz', '1234567890', true),
+('Distribuidora Escolar SA', 'Carlos Mendoza', '70234567', 'ventas@escolar.com.bo', 'Calle Comercio 456, La Paz', '2345678901', true),
+('Papelería Nacional', 'Ana Rodríguez', '70345678', 'info@papelerianacional.com', 'Av. Buenos Aires 789, La Paz', '3456789012', true),
+('Librería Juventud', 'José Martínez', '70456789', 'pedidos@juventud.com.bo', 'Calle Sagárnaga 321, La Paz', '4567890123', true);
+
+-- =====================================================
+-- USUARIO ADMINISTRADOR INICIAL
+-- =====================================================
+INSERT INTO users (first_name, last_name, email, phone, document_number, role_id, password, status, email_verified_at) 
+VALUES (
+    'Administrador', 
+    'Sistema', 
+    'admin@libreria.com', 
+    '70000000', 
+    '12345678', 
+    1, 
+    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- password = "password"
+    true, 
+    CURRENT_TIMESTAMP
+);
+
+-- =====================================================
+-- VISTAS ÚTILES PARA REPORTES
+-- =====================================================
+
+-- Vista para productos con información completa
+CREATE VIEW v_products_info AS
+SELECT 
+    p.id,
+    p.code,
+    p.name,
+    p.description,
+    c.name as category_name,
+    c.type as category_type,
+    s.name as supplier_name,
+    p.sale_price,
+    p.stock,
+    p.min_stock,
+    p.author,
+    p.publisher,
+    p.isbn,
+    p.status,
+    CASE 
+        WHEN p.stock <= p.min_stock THEN 'BAJO STOCK'
+        WHEN p.stock = 0 THEN 'AGOTADO'
+        ELSE 'NORMAL'
+    END as stock_status
+FROM products p
+LEFT JOIN categories c ON p.category_id = c.id
+LEFT JOIN suppliers s ON p.supplier_id = s.id;
+
+-- Vista para ventas con información completa
+CREATE VIEW v_sales_info AS
+SELECT 
+    s.id,
+    s.sale_number,
+    s.sale_date,
+    CONCAT(c.first_name, ' ', c.last_name) as customer_name,
+    c.document_number as customer_document,
+    CONCAT(u.first_name, ' ', u.last_name) as seller_name,
+    s.subtotal,
+    s.tax_amount,
+    s.discount_amount,
+    s.total,
+    s.payment_method,
+    s.status
+FROM sales s
+INNER JOIN customers c ON s.customer_id = c.id
+INNER JOIN users u ON s.user_id = u.id;
+
+-- Vista para clientes con estadísticas
+CREATE VIEW v_customers_stats AS
+SELECT 
+    c.id,
+    CONCAT(c.first_name, ' ', c.last_name) as full_name,
+    c.document_number,
+    c.phone,
+    c.email,
+    c.customer_type,
+    c.discount_percentage,
+    COUNT(s.id) as total_purchases,
+    COALESCE(SUM(s.total), 0) as total_spent,
+    MAX(s.sale_date) as last_purchase_date
+FROM customers c
+LEFT JOIN sales s ON c.id = s.customer_id AND s.status = 'completada'
+GROUP BY c.id, c.first_name, c.last_name, c.document_number, 
+         c.phone, c.email, c.customer_type, c.discount_percentage;
+
+-- =====================================================
+-- PROCEDIMIENTOS ALMACENADOS ÚTILES
+-- =====================================================
+
+-- Procedimiento para generar número de venta automático
+CREATE OR REPLACE FUNCTION generate_sale_number()
+RETURNS VARCHAR AS $$
+DECLARE
+    next_number INTEGER;
+    sale_number VARCHAR(20);
+BEGIN
+    SELECT COALESCE(MAX(CAST(SUBSTRING(sale_number FROM 2) AS INTEGER)), 0) + 1
+    INTO next_number
+    FROM sales
+    WHERE sale_number LIKE 'V%';
+    
+    sale_number := 'V' || LPAD(next_number::TEXT, 6, '0');
+    
+    RETURN sale_number;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Función para registrar movimiento de inventario
+CREATE OR REPLACE FUNCTION register_inventory_movement(
+    p_product_id INTEGER,
+    p_user_id INTEGER,
+    p_movement_type VARCHAR,
+    p_quantity INTEGER,
+    p_reference VARCHAR DEFAULT NULL,
+    p_description TEXT DEFAULT NULL
+)
+RETURNS VOID AS $$
+DECLARE
+    current_stock INTEGER;
+    new_stock INTEGER;
+BEGIN
+    -- Obtener stock actual
+    SELECT stock INTO current_stock FROM products WHERE id = p_product_id;
+    
+    -- Calcular nuevo stock
+    new_stock := current_stock + p_quantity;
+    
+    -- Validar que el stock no sea negativo
+    IF new_stock < 0 THEN
+        RAISE EXCEPTION 'Stock insuficiente. Stock actual: %, Cantidad solicitada: %', current_stock, ABS(p_quantity);
+    END IF;
+    
+    -- Registrar movimiento
+    INSERT INTO inventory_movements (
+        product_id, user_id, movement_type, quantity,
+        previous_stock, new_stock, reference, description, movement_date
+    ) VALUES (
+        p_product_id, p_user_id, p_movement_type, p_quantity,
+        current_stock, new_stock, p_reference, p_description, CURRENT_TIMESTAMP
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- =====================================================
+-- COMENTARIOS EN TABLAS
+-- =====================================================
+COMMENT ON TABLE roles IS 'Roles de usuarios del sistema';
+COMMENT ON TABLE users IS 'Usuarios del sistema con autenticación';
+COMMENT ON TABLE categories IS 'Categorías de productos';
+COMMENT ON TABLE suppliers IS 'Proveedores de productos';
+COMMENT ON TABLE products IS 'Productos de la librería (libros y material)';
+COMMENT ON TABLE customers IS 'Clientes de la librería';
+COMMENT ON TABLE sales IS 'Ventas realizadas';
+COMMENT ON TABLE sale_details IS 'Detalle de productos vendidos en cada venta';
+COMMENT ON TABLE inventory_movements IS 'Histórico de movimientos de inventario';
+
+-- =====================================================
+-- PERMISOS Y SEGURIDAD
+-- =====================================================
+
+-- Crear usuario para la aplicación (opcional)
+-- CREATE USER libreria_app WITH PASSWORD 'tu_password_seguro';
+-- GRANT CONNECT ON DATABASE libreria_db TO libreria_app;
+-- GRANT USAGE ON SCHEMA public TO libreria_app;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO libreria_app;
+-- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO libreria_app;
+
+-- =====================================================
+-- ÍNDICES ADICIONALES PARA OPTIMIZACIÓN
+-- =====================================================
+
+-- Índices para búsquedas frecuentes
+CREATE INDEX idx_products_stock_status ON products(stock, min_stock) WHERE status = true;
+CREATE INDEX idx_sales_date_range ON sales(sale_date, status);
+CREATE INDEX idx_inventory_movements_date_product ON inventory_movements(movement_date DESC, product_id);
+
+-- Índice para búsquedas de texto en productos
+CREATE INDEX idx_products_search ON products USING gin(to_tsvector('spanish', name || ' ' || COALESCE(author, '') || ' ' || COALESCE(description, '')));
+
+VACUUM ANALYZE;

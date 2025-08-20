@@ -1,0 +1,87 @@
+Semana 1 (Sprint 1)
+
+Objetivos del Sprint 1:
+
+Configurar el entorno de desarrollo y la base de datos.
+
+Crear la estructura base del proyecto en Laravel.
+
+Definir y configurar los roles y permisos de los usuarios.
+
+Tareas del Sprint 1:
+
+Configuración del Entorno
+
+Instalar Laravel (usando Composer).
+
+Configurar PostgreSQL y crear la base de datos.
+
+Configurar el archivo .env con las credenciales de la base de datos.
+
+Verificar que la conexión a la base de datos funcione correctamente.
+
+Estructura Base del Proyecto
+
+Crear el proyecto Laravel y configurar las dependencias básicas.
+
+Configurar las rutas principales y el controlador de bienvenida.
+
+Definir la estructura de carpetas (modelos, controladores, vistas, migraciones).
+
+Roles y Permisos
+
+Instalar y configurar un paquete de gestión de roles y permisos (por ejemplo, Spatie Laravel-Permission).
+
+Definir los roles: Administrador, Vendedor, Almacenero.
+
+Asignar permisos básicos a cada rol.
+
+Crear migraciones para las tablas de roles y permisos.
+
+Entregables del Sprint 1:
+
+Entorno de desarrollo listo con Laravel y PostgreSQL.
+
+Estructura base del proyecto definida.
+
+Roles y permisos configurados.
+
+Semana 2 (Sprint 2)
+
+Objetivos del Sprint 2:
+
+Implementar el módulo de productos (inventario).
+
+Crear las migraciones, modelos, controladores y vistas para gestionar productos.
+
+Implementar validaciones y alertas de stock bajo.
+
+Tareas del Sprint 2:
+
+Migraciones y Modelos de Productos
+
+Crear migración para la tabla de productos (campos: nombre, descripción, precio, stock, categoría, etc.).
+
+Crear el modelo Product y definir las relaciones necesarias.
+
+Controladores y Rutas
+
+Crear el controlador ProductController con métodos CRUD (crear, leer, actualizar, eliminar).
+
+Definir las rutas en web.php para el módulo de productos.
+
+Vistas con Blade
+
+Crear vistas para listar productos, crear un nuevo producto, editar y eliminar productos.
+
+Implementar validaciones en las vistas y mostrar mensajes de error.
+
+Alertas de Stock Bajo
+
+Implementar lógica para mostrar alertas cuando el stock de un producto esté por debajo de un umbral definido.
+
+Entregables del Sprint 2:
+
+Módulo de productos completamente funcional con CRUD.
+
+Validaciones y alertas de stock implementadas.
