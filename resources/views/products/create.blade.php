@@ -1,33 +1,34 @@
-@php($title = 'Nuevo producto')
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ $title }}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-</head>
-<body class="bg-light">
-  <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h1 class="h4 m-0">{{ $title }}</h1>
-      <a href="{{ route('products.index') }}" class="btn btn-secondary">Volver</a>
-    </div>
+@extends('layouts.app')
 
-    @if($errors->any())
-      <div class="alert alert-danger">
-        <strong>Revise los errores:</strong>
-        <ul class="mb-0">
-          @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-          @endforeach
-        </ul>
-      </div>
-    @endif
+@section('content')
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <x-ui.breadcrumbs :items="[
+      ['label' => 'Inicio', 'url' => route('dashboard')],
+      ['label' => 'Productos', 'url' => route('products.index')],
+      ['label' => 'Nuevo producto'],
+  ]" />
 
-    <form method="post" action="{{ route('products.store') }}" class="bg-white p-3 shadow-sm rounded">
-      @include('products._form')
-    </form>
-  </div>
-</body>
-</html>
+  <x-ui.page-header title="Nuevo producto" :icon="'<i class=\'fas fa-box\'></i>'">
+    <x-slot name="actions">
+      <a href="{{ route('products.index') }}" class="btn btn-ghost">
+        <i class="fas fa-arrow-left mr-2"></i> Volver
+      </a>
+    </x-slot>
+  </x-ui.page-header>
+
+  @if($errors->any())
+    <x-ui.alert type="error">
+      <strong>Revise los errores:</strong>
+      <ul class="list-disc list-inside mt-2">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </x-ui.alert>
+  @endif
+
+  <form method="post" action="{{ route('products.store') }}" class="card bg-base-100 shadow p-4">
+    @include('products._form')
+  </form>
+</div>
+@endsection

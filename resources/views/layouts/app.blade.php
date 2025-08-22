@@ -12,16 +12,31 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
+        <script>
+            (function () {
+                try {
+                    const saved = localStorage.getItem('theme') || 'corporate';
+                    document.documentElement.setAttribute('data-theme', saved);
+                    window.setTheme = function(theme){
+                        localStorage.setItem('theme', theme);
+                        document.documentElement.setAttribute('data-theme', theme);
+                    };
+                } catch (e) {
+                    // fallback
+                    document.documentElement.setAttribute('data-theme', 'corporate');
+                }
+            })();
+        </script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @stack('styles')
     </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
+    <body class="font-sans antialiased bg-base-200 text-base-content">
+        <div class="min-h-screen bg-base-200">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @if (View::hasSection('header'))
-                <header class="bg-white shadow">
+                <header class="bg-base-100 shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         @yield('header')
                     </div>

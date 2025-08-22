@@ -1,153 +1,127 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">
-                <i class="fas fa-tag text-primary me-2"></i>{{ $category->name }}
-            </h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Inicio</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('categories.index') }}">Categorías</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ $category->name }}</li>
-                </ol>
-            </nav>
-        </div>
-        <div class="btn-group" role="group">
-            <a href="{{ route('categories.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Volver
-            </a>
-            @can('categories.update')
-            <a href="{{ route('categories.edit', $category) }}" class="btn btn-primary">
-                <i class="fas fa-edit me-1"></i> Editar
-            </a>
-            @endcan
-        </div>
-    </div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <x-ui.breadcrumbs :items="[
+        ['label' => 'Inicio', 'url' => route('dashboard')],
+        ['label' => 'Categorías', 'url' => route('categories.index')],
+        ['label' => $category->name],
+    ]" />
 
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom-0 py-3">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle text-primary me-2"></i>Información de la Categoría
-                    </h5>
-                </div>
+    <x-ui.page-header :title="$category->name" :icon="'<i class=\'fas fa-tag\'></i>'">
+        <x-slot name="actions">
+            <div class="join">
+                <a href="{{ route('categories.index') }}" class="btn btn-ghost join-item">
+                    <i class="fas fa-arrow-left mr-2"></i> Volver
+                </a>
+                @can('categories.update')
+                <a href="{{ route('categories.edit', $category) }}" class="btn btn-primary join-item">
+                    <i class="fas fa-edit mr-2"></i> Editar
+                </a>
+                @endcan
+            </div>
+        </x-slot>
+    </x-ui.page-header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+            <div class="card bg-base-100 shadow mb-6">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-4">
-                                <h6 class="text-muted text-uppercase small mb-2">Nombre</h6>
-                                <p class="h5 mb-0">{{ $category->name }}</p>
+                    <h3 class="card-title text-base-content/80"><i class="fas fa-info-circle mr-2"></i>Información de la Categoría</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-2">
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-xs uppercase opacity-70 mb-1">Nombre</div>
+                                <div class="text-lg font-semibold">{{ $category->name }}</div>
                             </div>
-                            
-                            <div class="mb-4">
-                                <h6 class="text-muted text-uppercase small mb-2">Tipo</h6>
-                                {!! $category->type_badge !!}
+                            <div>
+                                <div class="text-xs uppercase opacity-70 mb-1">Tipo</div>
+                                <x-ui.badge color="primary">{{ ucfirst(str_replace('_',' ', $category->type)) }}</x-ui.badge>
                             </div>
-                            
-                            <div class="mb-4">
-                                <h6 class="text-muted text-uppercase small mb-2">Estado</h6>
-                                {!! $category->status_badge !!}
+                            <div>
+                                <div class="text-xs uppercase opacity-70 mb-1">Estado</div>
+                                <x-ui.badge color="{{ $category->status ? 'success' : 'ghost' }}">
+                                    <i class="fas {{ $category->status ? 'fa-check-circle' : 'fa-times-circle' }} mr-1"></i>
+                                    {{ $category->status ? 'Activo' : 'Inactivo' }}
+                                </x-ui.badge>
                             </div>
                         </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-4">
-                                <h6 class="text-muted text-uppercase small mb-2">Creada</h6>
-                                <p class="mb-0">
-                                    <i class="far fa-calendar-alt me-2 text-muted"></i>
-                                    {{ $category->created_at->format('d/m/Y H:i') }}
-                                    <small class="d-block text-muted mt-1">
-                                        ({{ $category->created_at->diffForHumans() }})
-                                    </small>
-                                </p>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-xs uppercase opacity-70 mb-1">Creada</div>
+                                <div><i class="far fa-calendar-alt mr-2"></i>{{ $category->created_at->format('d/m/Y H:i') }}</div>
+                                <div class="text-xs opacity-70">({{ $category->created_at->diffForHumans() }})</div>
                             </div>
-                            
-                            <div class="mb-4">
-                                <h6 class="text-muted text-uppercase small mb-2">Última Actualización</h6>
-                                <p class="mb-0">
-                                    <i class="far fa-clock me-2 text-muted"></i>
-                                    {{ $category->updated_at->format('d/m/Y H:i') }}
-                                    <small class="d-block text-muted mt-1">
-                                        ({{ $category->updated_at->diffForHumans() }})
-                                    </small>
-                                </p>
+                            <div>
+                                <div class="text-xs uppercase opacity-70 mb-1">Última Actualización</div>
+                                <div><i class="far fa-clock mr-2"></i>{{ $category->updated_at->format('d/m/Y H:i') }}</div>
+                                <div class="text-xs opacity-70">({{ $category->updated_at->diffForHumans() }})</div>
                             </div>
                         </div>
                     </div>
-                    
+
                     @if($category->description)
-                    <div class="border-top pt-4 mt-3">
-                        <h6 class="text-muted text-uppercase small mb-3">Descripción</h6>
-                        <div class="bg-light p-3 rounded">
-                            {!! nl2br(e($category->description)) !!}
+                        <div class="divider"></div>
+                        <div>
+                            <div class="text-xs uppercase opacity-70 mb-2">Descripción</div>
+                            <div class="p-3 rounded-box bg-base-200">{!! nl2br(e($category->description)) !!}</div>
                         </div>
-                    </div>
                     @endif
                 </div>
             </div>
-            
-            <!-- Productos de esta categoría -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0 py-3">
-                    <h5 class="mb-0">
-                        <i class="fas fa-boxes text-primary me-2"></i>
-                        Productos en esta categoría
-                        <span class="badge bg-primary rounded-pill ms-2">{{ $products->total() }}</span>
-                    </h5>
-                </div>
+
+            <div class="card bg-base-100 shadow">
                 <div class="card-body p-0">
+                    <div class="px-6 pt-6 flex items-center justify-between">
+                        <h3 class="card-title text-base-content/80"><i class="fas fa-boxes mr-2"></i>Productos en esta categoría</h3>
+                        <span class="badge badge-primary">{{ $products->total() }}</span>
+                    </div>
+
                     @if($products->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
+                        <div class="overflow-x-auto">
+                            <table class="table">
+                                <thead>
                                     <tr>
                                         <th>Producto</th>
-                                        <th class="text-end">Precio</th>
+                                        <th class="text-right">Precio</th>
                                         <th class="text-center">Stock</th>
-                                        <th class="text-end">Acciones</th>
+                                        <th class="text-right">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($products as $product)
                                     <tr>
                                         <td>
-                                            <div class="d-flex align-items-center">
+                                            <div class="flex items-center gap-3">
                                                 @if($product->image)
-                                                <img src="{{ asset('storage/' . $product->image) }}" 
-                                                     alt="{{ $product->name }}" 
-                                                     class="rounded me-3" 
-                                                     style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <div class="avatar">
+                                                        <div class="w-10 rounded">
+                                                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" />
+                                                        </div>
+                                                    </div>
                                                 @else
-                                                <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" 
-                                                     style="width: 40px; height: 40px;">
-                                                    <i class="fas fa-box text-muted"></i>
-                                                </div>
+                                                    <div class="avatar placeholder">
+                                                        <div class="bg-base-200 text-base-content/60 rounded w-10">
+                                                            <i class="fas fa-box"></i>
+                                                        </div>
+                                                    </div>
                                                 @endif
                                                 <div>
-                                                    <h6 class="mb-0">{{ $product->name }}</h6>
-                                                    <small class="text-muted">Código: {{ $product->code ?? 'N/A' }}</small>
+                                                    <div class="font-medium">{{ $product->name }}</div>
+                                                    <div class="text-xs opacity-70">Código: {{ $product->code ?? 'N/A' }}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-end">
-                                            {{ number_format($product->price, 2) }} Bs.
-                                        </td>
+                                        <td class="text-right">{{ number_format($product->price, 2) }} Bs.</td>
                                         <td class="text-center">
                                             @if($product->stock <= $product->stock_alert)
-                                                <span class="badge bg-danger">{{ $product->stock }} unidades</span>
+                                                <span class="badge badge-error">{{ $product->stock }} unidades</span>
                                             @else
-                                                <span class="badge bg-success">{{ $product->stock }} unidades</span>
+                                                <span class="badge badge-success">{{ $product->stock }} unidades</span>
                                             @endif
                                         </td>
-                                        <td class="text-end">
-                                            <a href="{{ route('products.show', $product) }}" 
-                                               class="btn btn-sm btn-outline-primary"
-                                               data-bs-toggle="tooltip" 
-                                               title="Ver detalles">
+                                        <td class="text-right">
+                                            <a href="{{ route('products.show', $product) }}" class="btn btn-ghost btn-sm" title="Ver detalles">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </td>
@@ -156,186 +130,95 @@
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         @if($products->hasPages())
-                        <div class="p-3 border-top">
+                        <div class="px-6 pb-6 border-t border-base-200">
                             {{ $products->links() }}
                         </div>
                         @endif
-                        
                     @else
-                    <div class="text-center p-5">
-                        <div class="mb-3">
-                            <i class="fas fa-box-open fa-3x text-muted"></i>
+                        <div class="p-8">
+                            <x-ui.empty-state :icon="'<i class=\'fas fa-box-open\'></i>'" title="No hay productos" description="No hay productos en esta categoría todavía.">
+                                @can('products.create')
+                                <x-slot name="action">
+                                    <a href="{{ route('products.create') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus mr-2"></i> Agregar Producto
+                                    </a>
+                                </x-slot>
+                                @endcan
+                            </x-ui.empty-state>
                         </div>
-                        <h5 class="text-muted mb-3">No hay productos en esta categoría</h5>
-                        @can('products.create')
-                        <a href="{{ route('products.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-1"></i> Agregar Producto
-                        </a>
-                        @endcan
-                    </div>
                     @endif
                 </div>
             </div>
         </div>
-        
-        <div class="col-lg-4">
-            <!-- Resumen -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom-0 py-3">
-                    <h5 class="mb-0">
-                        <i class="fas fa-chart-pie text-primary me-2"></i>Resumen
-                    </h5>
-                </div>
+
+        <div>
+            <div class="card bg-base-100 shadow mb-6">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted">Total de Productos</span>
-                        <span class="fw-bold">{{ $category->products_count }}</span>
-                    </div>
-                    
-                    <div class="progress mb-4" style="height: 8px;">
-                        @php
-                            $percentage = $category->products_count > 0 
-                                ? min(100, ($category->products_count / 100) * 100) 
-                                : 0;
-                        @endphp
-                        <div class="progress-bar bg-primary" role="progressbar" 
-                             style="width: {{ $percentage }}%" 
-                             aria-valuenow="{{ $category->products_count }}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
+                    <h3 class="card-title text-base-content/80"><i class="fas fa-chart-pie mr-2"></i>Resumen</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="opacity-70">Total de Productos</span>
+                            <span class="font-semibold">{{ $category->products_count }}</span>
                         </div>
-                    </div>
-                    
-                    @if($category->type === 'libros')
-                    <div class="alert alert-info small mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Esta categoría está marcada como <strong>Libros</strong>. Los productos aquí podrían incluir libros de texto, novelas, etc.
-                    </div>
-                    @elseif($category->type === 'utiles_escolares')
-                    <div class="alert alert-warning small mb-0">
-                        <i class="fas fa-pencil-alt me-2"></i>
-                        Esta categoría está marcada como <strong>Útiles Escolares</strong>. Incluye materiales como cuadernos, lápices, etc.
-                    </div>
-                    @elseif($category->type === 'oficina')
-                    <div class="alert alert-secondary small mb-0">
-                        <i class="fas fa-briefcase me-2"></i>
-                        Esta categoría está marcada como <strong>Oficina</strong>. Incluye suministros de oficina varios.
-                    </div>
-                    @endif
-                </div>
-            </div>
-            
-            <!-- Acciones rápidas -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom-0 py-3">
-                    <h5 class="mb-0">
-                        <i class="fas fa-bolt text-primary me-2"></i>Acciones Rápidas
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        @can('products.create')
-                        <a href="{{ route('products.create', ['category_id' => $category->id]) }}" 
-                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-plus-circle text-success me-2"></i>Agregar Producto</span>
-                            <i class="fas fa-chevron-right text-muted small"></i>
-                        </a>
-                        @endcan
-                        
-                        @can('categories.products.export')
-                        <a href="#" 
-                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-file-export text-info me-2"></i>Exportar Productos</span>
-                            <i class="fas fa-chevron-right text-muted small"></i>
-                        </a>
-                        @endcan
-                        
-                        @can('categories.update')
-                        <a href="{{ route('categories.edit', $category) }}" 
-                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-edit text-warning me-2"></i>Editar Categoría</span>
-                            <i class="fas fa-chevron-right text-muted small"></i>
-                        </a>
-                        @endcan
-                        
-                        @can('categories.delete')
-                        @if($category->products_count === 0)
-                        <form action="{{ route('categories.destroy', $category) }}" method="POST" 
-                              class="list-group-item list-group-item-action p-0"
-                              onsubmit="return confirm('¿Está seguro de eliminar esta categoría? Esta acción no se puede deshacer.');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-link text-decoration-none text-danger w-100 text-start">
-                                <i class="fas fa-trash-alt me-2"></i>Eliminar Categoría
-                            </button>
-                        </form>
-                        @else
-                        <div class="list-group-item text-muted">
-                            <i class="fas fa-info-circle me-2"></i>
-                            No se puede eliminar porque tiene productos asociados.
+                        @if($category->products_count > 0)
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Esta categoría tiene productos asociados.
                         </div>
                         @endif
-                        @endcan
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow">
+                <div class="card-body">
+                    <h3 class="card-title text-base-content/80"><i class="fas fa-bolt mr-2"></i>Acciones Rápidas</h3>
+                    <div class="menu bg-base-100 rounded-box">
+                        <ul>
+                            @can('products.create')
+                            <li>
+                                <a href="{{ route('products.create', ['category_id' => $category->id]) }}">
+                                    <i class="fas fa-plus-circle mr-2 text-success"></i>Agregar Producto
+                                </a>
+                            </li>
+                            @endcan
+                            @can('categories.products.export')
+                            <li>
+                                <a href="#">
+                                    <i class="fas fa-file-export mr-2 text-info"></i>Exportar Productos
+                                </a>
+                            </li>
+                            @endcan
+                            @can('categories.update')
+                            <li>
+                                <a href="{{ route('categories.edit', $category) }}">
+                                    <i class="fas fa-edit mr-2 text-warning"></i>Editar Categoría
+                                </a>
+                            </li>
+                            @endcan
+                            @can('categories.delete')
+                            <li>
+                                @if($category->products_count === 0)
+                                    <form action="{{ route('categories.destroy', $category) }}" method="POST" onsubmit="return confirm('¿Está seguro de eliminar esta categoría? Esta acción no se puede deshacer.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-error">
+                                            <i class="fas fa-trash-alt mr-2"></i>Eliminar Categoría
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="opacity-70"><i class="fas fa-info-circle mr-2"></i>No se puede eliminar porque tiene productos asociados.</span>
+                                @endif
+                            </li>
+                            @endcan
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@push('styles')
-<style>
-    .card {
-        border-radius: 0.5rem;
-        overflow: hidden;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.05) !important;
-    }
-    .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid rgba(0,0,0,.05);
-    }
-    .table th {
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 0.5px;
-    }
-    .list-group-item {
-        border-left: 0;
-        border-right: 0;
-        padding: 0.75rem 1.25rem;
-    }
-    .list-group-item:first-child {
-        border-top: 0;
-    }
-    .list-group-item:last-child {
-        border-bottom: 0;
-    }
-    .list-group-item:hover {
-        background-color: #f8f9fa;
-    }
-    .progress {
-        border-radius: 10px;
-    }
-</style>
-@endpush
-
-@push('scripts')
-<script>
-    // Inicializar tooltips
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
-</script>
-@endpush
 
 @endsection

@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="bg-base-100 border-b border-base-200 text-base-content">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -15,21 +15,53 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         <i class="fas fa-tachometer-alt mr-2"></i>{{ __('Dashboard') }}
                     </x-nav-link>
-                    @can('products.index')
+                    @canany(['products.index','products.create'])
                     <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
                         <i class="fas fa-boxes mr-2"></i>{{ __('Productos') }}
                     </x-nav-link>
-                    @endcan
-                    @can('categories.index')
+                    @endcanany
+                    @canany(['categories.index','categories.create'])
                     <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                         <i class="fas fa-tags mr-2"></i>{{ __('Categorías') }}
                     </x-nav-link>
-                    @endcan
+                    @endcanany
+                    @if(Route::has('suppliers.index'))
+                    @canany(['suppliers.index','suppliers.create'])
+                    <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+                        <i class="fas fa-truck mr-2"></i>{{ __('Proveedores') }}
+                    </x-nav-link>
+                    @endcanany
+                    @endif
+                    @if(Route::has('customers.index'))
+                    @canany(['customers.index','customers.create'])
+                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                        <i class="fas fa-user-friends mr-2"></i>{{ __('Clientes') }}
+                    </x-nav-link>
+                    @endcanany
+                    @endif
+                    @if(Route::has('sales.index'))
+                    @canany(['sales.index','sales.create'])
+                    <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
+                        <i class="fas fa-cash-register mr-2"></i>{{ __('Ventas') }}
+                    </x-nav-link>
+                    @endcanany
+                    @endif
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <!-- Settings + Theme Toggle -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
+                <!-- Theme Toggle -->
+                <button type="button"
+                        class="btn btn-sm btn-outline"
+                        title="Cambiar tema"
+                        onclick="(function(){
+                            const cur = document.documentElement.getAttribute('data-theme');
+                            setTheme(cur === 'dark' ? 'corporate' : 'dark');
+                        })()">
+                    <span class="hidden md:inline">Tema</span>
+                    <span class="md:ml-2">🌞/🌙</span>
+                </button>
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -76,20 +108,41 @@
 
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
+        <div class="pt-2 pb-3 space-y-1 bg-base-100 text-base-content">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 <i class="fas fa-tachometer-alt mr-2"></i>{{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @can('products.index')
+            @canany(['products.index','products.create'])
             <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
                 <i class="fas fa-boxes mr-2"></i>{{ __('Productos') }}
             </x-responsive-nav-link>
-            @endcan
-            @can('categories.index')
+            @endcanany
+            @canany(['categories.index','categories.create'])
             <x-responsive-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                 <i class="fas fa-tags mr-2"></i>{{ __('Categorías') }}
             </x-responsive-nav-link>
-            @endcan
+            @endcanany
+            @if(Route::has('suppliers.index'))
+            @canany(['suppliers.index','suppliers.create'])
+            <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+                <i class="fas fa-truck mr-2"></i>{{ __('Proveedores') }}
+            </x-responsive-nav-link>
+            @endcanany
+            @endif
+            @if(Route::has('customers.index'))
+            @canany(['customers.index','customers.create'])
+            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
+                <i class="fas fa-user-friends mr-2"></i>{{ __('Clientes') }}
+            </x-responsive-nav-link>
+            @endcanany
+            @endif
+            @if(Route::has('sales.index'))
+            @canany(['sales.index','sales.create'])
+            <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
+                <i class="fas fa-cash-register mr-2"></i>{{ __('Ventas') }}
+            </x-responsive-nav-link>
+            @endcanany
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

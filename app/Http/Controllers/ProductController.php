@@ -80,6 +80,12 @@ class ProductController extends Controller
         return view('products.edit', compact('product', 'categories', 'suppliers'));
     }
 
+    public function show(Product $product)
+    {
+        $product->load(['category', 'supplier']);
+        return view('products.show', compact('product'));
+    }
+
     public function update(UpdateProductRequest $request, Product $product)
     {
         $data = $request->validated();

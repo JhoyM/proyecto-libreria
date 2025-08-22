@@ -3,6 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -24,10 +27,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Módulo de productos
-    Route::resource('products', ProductController::class)->except(['show']);
+    Route::resource('products', ProductController::class);
     
     // Módulo de categorías
     Route::resource('categories', CategoryController::class);
+
+    // Módulo de proveedores
+    // Nota: vistas protegidas a nivel de UI con @canany; políticas/permits pueden añadirse luego
+    Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+
+    // Módulo de clientes
+    Route::resource('customers', CustomerController::class);
+
+    // Módulo de ventas
+    Route::get('sales/report', [SalesController::class, 'report'])->name('sales.report');
+    Route::resource('sales', SalesController::class)->only(['index','create','store','show','edit','update','destroy']);
 });
 
 require __DIR__.'/auth.php';

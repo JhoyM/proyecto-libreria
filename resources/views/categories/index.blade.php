@@ -1,102 +1,81 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0">
-                <i class="fas fa-tags text-primary"></i> Gestión de Categorías
-            </h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Inicio</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Categorías</li>
-                </ol>
-            </nav>
-        </div>
-        @can('categories.create')
-        <div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <x-ui.breadcrumbs :items="[
+        ['label' => 'Inicio', 'url' => route('dashboard')],
+        ['label' => 'Categorías'],
+    ]" />
+    <x-ui.page-header title="Gestión de Categorías"
+        :icon="'<i class=\'fas fa-tags\'></i>'">
+        <x-slot name="actions">
+            @can('categories.create')
             <a href="{{ route('categories.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus-circle me-1"></i> Nueva Categoría
+                <i class="fas fa-plus-circle mr-2"></i> Nueva Categoría
             </a>
-        </div>
-        @endcan
-    </div>
+            @endcan
+        </x-slot>
+    </x-ui.page-header>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <x-ui.alert type="success" :message="session('success')" />
     @endif
-
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <x-ui.alert type="error" :message="session('error')" />
     @endif
 
-    <div class="card border-0 shadow-sm">
+    <div class="card bg-base-100 shadow">
         <div class="card-body p-0">
             <!-- Filtros -->
-            <div class="p-4 border-bottom">
-                <form action="{{ route('categories.index') }}" method="GET" class="row g-3">
-                    <div class="col-md-5">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white">
-                                <i class="fas fa-search text-muted"></i>
-                            </span>
-                            <input type="text" name="q" class="form-control" 
-                                   placeholder="Buscar por nombre o descripción..." 
-                                   value="{{ $q ?? '' }}">
-                        </div>
+            <div class="p-4 border-b border-base-200">
+                <form action="{{ route('categories.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div class="md:col-span-5">
+                        <label class="input input-bordered flex items-center gap-2">
+                            <i class="fas fa-search text-base-content/70"></i>
+                            <input type="text" name="q" class="grow" placeholder="Buscar por nombre o descripción..." value="{{ $q ?? '' }}"/>
+                        </label>
                     </div>
-                    <div class="col-md-4">
-                        <select name="type" class="form-select" onchange="this.form.submit()">
+                    <div class="md:col-span-4">
+                        <select name="type" class="select select-bordered w-full" onchange="this.form.submit()">
                             <option value="">Todos los tipos</option>
                             @foreach($typeFilters as $key => $label)
-                                <option value="{{ $key }}" {{ $type == $key ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
+                                <option value="{{ $key }}" {{ $type == $key ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-filter me-1"></i> Filtrar
+                    <div class="md:col-span-3">
+                        <button type="submit" class="btn btn-primary w-full">
+                            <i class="fas fa-filter mr-2"></i> Filtrar
                         </button>
                     </div>
                 </form>
             </div>
 
             <!-- Tabla de categorías -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
                         <tr>
-                            <th class="ps-4">Nombre</th>
+                            <th>Nombre</th>
                             <th>Tipo</th>
                             <th>Productos</th>
                             <th>Estado</th>
-                            <th class="text-end pe-4">Acciones</th>
+                            <th class="text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($categories as $category)
                             <tr>
-                                <td class="ps-4">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0 me-2">
-                                            <div class="avatar-sm">
-                                                <div class="avatar-title bg-light text-primary rounded-circle font-size-18">
-                                                    <i class="fas fa-tag"></i>
-                                                </div>
+                                <td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="avatar placeholder">
+                                            <div class="bg-base-200 text-primary rounded-full w-10">
+                                                <span><i class="fas fa-tag"></i></span>
                                             </div>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0">{{ $category->name }}</h6>
-                                            <p class="text-muted mb-0 small">{{ $category->slug }}</p>
+                                            <div class="font-medium">{{ $category->name }}</div>
+                                            <div class="text-xs opacity-60">{{ $category->slug }}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -108,61 +87,45 @@
                                             'oficina' => 'info'
                                         ];
                                         $color = $typeColors[$category->type] ?? 'secondary';
-                                    @endphp
-                                    <span class="badge bg-soft-{{ $color }} text-{{ $color }}">
-                                        <i class="fas {{ [
+                                        $icons = [
                                             'libros' => 'fa-book',
                                             'utiles_escolares' => 'fa-pencil-ruler',
                                             'oficina' => 'fa-briefcase'
-                                        ][$category->type] ?? 'fa-tag' }} me-1"></i>
+                                        ];
+                                    @endphp
+                                    <x-ui.badge :color="$color">
+                                        <i class="fas {{ $icons[$category->type] ?? 'fa-tag' }} mr-1"></i>
                                         {{ $typeFilters[$category->type] ?? $category->type }}
-                                    </span>
+                                    </x-ui.badge>
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-dark">
-                                        <i class="fas fa-boxes me-1"></i>
+                                    <span class="badge">
+                                        <i class="fas fa-boxes mr-1"></i>
                                         {{ $category->products_count }} {{ Str::plural('producto', $category->products_count) }}
                                     </span>
                                 </td>
                                 <td>
                                     @if($category->status)
-                                        <span class="badge bg-success bg-soft">
-                                            <i class="fas fa-check-circle me-1"></i> Activo
-                                        </span>
+                                        <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Activo</span>
                                     @else
-                                        <span class="badge bg-secondary bg-soft">
-                                            <i class="fas fa-times-circle me-1"></i> Inactivo
-                                        </span>
+                                        <span class="badge badge-ghost"><i class="fas fa-times-circle mr-1"></i> Inactivo</span>
                                     @endif
                                 </td>
-                                <td class="text-end pe-4">
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('categories.show', $category) }}" 
-                                           class="btn btn-sm btn-soft-info" 
-                                           data-bs-toggle="tooltip" 
-                                           title="Ver detalles">
+                                <td class="text-right">
+                                    <div class="join join-horizontal">
+                                        <a href="{{ route('categories.show', $category) }}" class="btn btn-sm btn-ghost join-item" title="Ver detalles">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @can('categories.update')
-                                        <a href="{{ route('categories.edit', $category) }}" 
-                                           class="btn btn-sm btn-soft-warning" 
-                                           data-bs-toggle="tooltip" 
-                                           title="Editar">
+                                        <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-ghost join-item" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         @endcan
                                         @can('categories.delete')
-                                        <form action="{{ route('categories.destroy', $category) }}" 
-                                              method="POST" 
-                                              class="d-inline" 
-                                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta categoría?\n\nNota: Solo se pueden eliminar categorías sin productos asociados.')">
+                                        <form action="{{ route('categories.destroy', $category) }}" method="POST" class="join-item inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta categoría?\n\nNota: Solo se pueden eliminar categorías sin productos asociados.')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" 
-                                                    class="btn btn-sm btn-soft-danger" 
-                                                    data-bs-toggle="tooltip" 
-                                                    title="Eliminar"
-                                                    {{ $category->products_count > 0 ? 'disabled' : '' }}>
+                                            <button type="submit" class="btn btn-sm btn-ghost text-error" title="Eliminar" {{ $category->products_count > 0 ? 'disabled' : '' }}>
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
@@ -172,28 +135,22 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5">
-                                    <div class="py-4">
-                                        <div class="avatar-lg mx-auto mb-4">
-                                            <div class="avatar-title bg-light text-muted rounded-circle">
-                                                <i class="fas fa-inbox fa-2x"></i>
-                                            </div>
-                                        </div>
-                                        <h5>No se encontraron categorías</h5>
-                                        @if(request()->has('q') || request()->has('type'))
-                                            <p class="text-muted">No hay resultados para tu búsqueda. Intenta con otros términos o</p>
-                                            <a href="{{ route('categories.index') }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-times me-1"></i> Limpiar filtros
-                                            </a>
-                                        @else
-                                            <p class="text-muted">Aún no hay categorías registradas. Comienza creando una nueva.</p>
-                                            @can('categories.create')
-                                            <a href="{{ route('categories.create') }}" class="btn btn-primary">
-                                                <i class="fas fa-plus-circle me-1"></i> Crear Categoría
-                                            </a>
-                                            @endcan
-                                        @endif
-                                    </div>
+                                <td colspan="5">
+                                    @if(request()->has('q') || request()->has('type'))
+                                        <x-ui.empty-state title="Sin resultados"
+                                                          description="No hay resultados para tu búsqueda. Intenta con otros términos o limpia los filtros."
+                                                          :actionUrl="route('categories.index')"
+                                                          actionLabel="Limpiar filtros"
+                                                          actionColor="ghost"
+                                                          :icon="'<i class=\'fas fa-inbox\'></i>'" />
+                                    @else
+                                        <x-ui.empty-state title="Aún no hay categorías"
+                                                          description="Comienza creando una nueva categoría."
+                                                          :actionUrl="auth()->user()->can('categories.create') ? route('categories.create') : null"
+                                                          actionLabel="Crear Categoría"
+                                                          actionColor="primary"
+                                                          :icon="'<i class=\'fas fa-inbox\'></i>'" />
+                                    @endif
                                 </td>
                             </tr>
                         @endforelse
@@ -201,10 +158,9 @@
                 </table>
             </div>
 
-            <!-- Paginación -->
             @if($categories->hasPages())
-                <div class="p-3 border-top d-flex justify-content-between align-items-center">
-                    <div class="text-muted">
+                <div class="p-4 border-t border-base-200 flex items-center justify-between text-sm">
+                    <div class="opacity-70">
                         Mostrando <b>{{ $categories->firstItem() }}</b> a <b>{{ $categories->lastItem() }}</b> de <b>{{ $categories->total() }}</b> categorías
                     </div>
                     {{ $categories->withQueryString()->links() }}
@@ -214,16 +170,6 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-    // Inicializar tooltips
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
-</script>
-@endpush
+{{-- Bootstrap tooltips removed in favor of simpler titles; DaisyUI has no JS requirement here --}}
 
 @endsection
