@@ -14,6 +14,11 @@
         <i class="fas fa-arrow-left mr-2"></i> Volver
       </a>
       @if($sale->status !== 'anulada')
+      <a href="{{ route('sales.edit', $sale) }}" class="btn btn-outline">
+        <i class="fas fa-edit mr-2"></i> Editar
+      </a>
+      @endif
+      @if($sale->status !== 'anulada')
       <form action="{{ route('sales.destroy', $sale) }}" method="POST" class="inline" onsubmit="return confirm('¿Anular esta venta y restaurar stock?');">
         @csrf
         @method('DELETE')

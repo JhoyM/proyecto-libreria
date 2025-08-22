@@ -13,6 +13,12 @@
       <a href="{{ route('sales.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver
       </a>
+      <a
+        href="{{ route('sales.report', array_filter(array_merge(request()->query(), ['export' => 'csv']))) }}"
+        class="btn btn-outline ml-2"
+      >
+        <i class="fas fa-file-csv mr-2"></i> Exportar CSV
+      </a>
     </x-slot>
   </x-ui.page-header>
 

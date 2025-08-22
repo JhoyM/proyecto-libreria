@@ -12,7 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Illuminate\Contracts\View\View as ViewContract;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SalesController extends Controller
 {
@@ -199,7 +200,7 @@ class SalesController extends Controller
         });
     }
 
-    public function report(Request $request): View
+    public function report(Request $request): ViewContract|StreamedResponse
     {
         $from = $request->date('from');
         $to = $request->date('to');
@@ -214,6 +215,36 @@ class SalesController extends Controller
             ->when($method, fn($q) => $q->where('payment_method', $method))
             ->when($status, fn($q) => $q->where('status', $status))
             ->orderByDesc('sale_date');
+
+        // CSV export
+        if ($request->string('export')->lower() === 'csv') {
+            $filename = 'reporte_ventas_'.now()->format('Ymd_His').'.csv';
+            $response = new StreamedResponse(function() use ($query) {
+                $handle = fopen('php://output', 'w');
+                // UTF-8 BOM for Excel compatibility
+                fwrite($handle, "\xEF\xBB\xBF");
+                fputcsv($handle, ['N°','Fecha','Cliente','Método','Estado','Subtotal','Impuestos','Descuentos','Total']);
+                $query->with('customer')->chunk(500, function($chunk) use ($handle) {
+                    foreach ($chunk as $s) {
+                        fputcsv($handle, [
+                            $s->sale_number,
+                            optional($s->sale_date)->format('Y-m-d H:i:s'),
+                            optional($s->customer)->full_name,
+                            $s->payment_method,
+                            $s->status,
+                            number_format((float)$s->subtotal, 2, '.', ''),
+                            number_format((float)$s->tax_amount, 2, '.', ''),
+                            number_format((float)$s->discount_amount, 2, '.', ''),
+                            number_format((float)$s->total, 2, '.', ''),
+                        ]);
+                    }
+                });
+                fclose($handle);
+            });
+            $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+            $response->headers->set('Content-Disposition', 'attachment; filename="'.$filename.'"');
+            return $response;
+        }
 
         $sales = $query->paginate(15)->withQueryString();
         $totals = [
