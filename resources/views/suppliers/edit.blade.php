@@ -8,7 +8,7 @@
       ['label' => 'Editar proveedor'],
   ]" />
 
-  <x-ui.page-header title="Editar proveedor" :icon="'&lt;i class=\'fas fa-truck\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header title="Editar proveedor" icon="<i class='fas fa-truck'></i>">
     <x-slot name="actions">
       <a href="{{ route('suppliers.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver

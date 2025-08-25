@@ -8,7 +8,7 @@
       ['label' => $customer->full_name],
   ]" />
 
-  <x-ui.page-header :title="$customer->full_name" :icon="'&lt;i class=\'fas fa-user-friends\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header :title="$customer->full_name" icon="<i class='fas fa-user-friends'></i>">
     <x-slot name="actions">
       <a href="{{ route('customers.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver

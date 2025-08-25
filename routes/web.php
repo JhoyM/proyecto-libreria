@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -41,7 +42,18 @@ Route::middleware('auth')->group(function () {
 
     // Módulo de ventas
     Route::get('sales/report', [SalesController::class, 'report'])->name('sales.report');
+    Route::middleware(['role:Administrador'])->group(function () {
+        Route::get('sales/report/by-period', [SalesController::class, 'reportByPeriod'])->name('sales.report.by_period');
+        Route::get('sales/report/by-category', [SalesController::class, 'reportByCategory'])->name('sales.report.by_category');
+    });
     Route::resource('sales', SalesController::class)->only(['index','create','store','show','edit','update','destroy']);
+
+    // (Deprecated) Reportes generales separados — dejamos rutas por si hay enlaces guardados
+    // Route::middleware(['role:Administrador'])->group(function () {
+    //     Route::get('/reports/sales', [ReportsController::class, 'sales'])->name('reports.sales');
+    //     Route::get('/reports/sales/by-month', [ReportsController::class, 'salesByMonth'])->name('reports.sales.by_month');
+    //     Route::get('/reports/sales/by-category', [ReportsController::class, 'salesByCategory'])->name('reports.sales.by_category');
+    // });
 });
 
 require __DIR__.'/auth.php';

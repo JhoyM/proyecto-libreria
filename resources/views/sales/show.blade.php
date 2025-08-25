@@ -8,7 +8,7 @@
       ['label' => $sale->sale_number],
   ]" />
 
-  <x-ui.page-header :title="'Venta ' . $sale->sale_number" :icon="'&lt;i class=\'fas fa-cash-register\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header :title="'Venta ' . $sale->sale_number" icon="<i class='fas fa-cash-register'></i>">
     <x-slot name="actions">
       <a href="{{ route('sales.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver

@@ -14,10 +14,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Contracts\View\View as ViewContract;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Barryvdh\DomPDF\Facade\Pdf; // PDF export
+use Illuminate\Http\JsonResponse;
+use Carbon\Carbon;
 
 class SalesController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): ViewContract
     {
         $q = trim((string) $request->get('q'));
 
@@ -37,7 +40,7 @@ class SalesController extends Controller
         return view('sales.index', compact('sales', 'q'));
     }
 
-    public function create(): View
+    public function create(): ViewContract
     {
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
         $products = Product::where('status', true)->orderBy('name')->get(['id','name','sale_price','stock']);
@@ -122,13 +125,13 @@ class SalesController extends Controller
         });
     }
 
-    public function show(Sale $sale): View
+    public function show(Sale $sale): ViewContract
     {
         $sale->load(['customer','user','details.product']);
         return view('sales.show', compact('sale'));
     }
 
-    public function edit(Sale $sale): View
+    public function edit(Sale $sale): ViewContract
     {
         $sale->load(['details.product']);
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
@@ -200,7 +203,7 @@ class SalesController extends Controller
         });
     }
 
-    public function report(Request $request): ViewContract|StreamedResponse
+    public function report(Request $request): ViewContract|StreamedResponse|RedirectResponse
     {
         $from = $request->date('from');
         $to = $request->date('to');
@@ -260,6 +263,95 @@ class SalesController extends Controller
 
         return view('sales.report', compact('sales','totals','customers','paymentMethods','statuses','from','to','customerId','method','status'));
     }
+
+    // JSON: ventas por periodo (mes/semana/día) para gráficos en la vista de reporte
+    public function reportByPeriod(Request $request): JsonResponse
+    {
+        $from = $request->date('from');
+        $to = $request->date('to');
+        $group = $request->get('group', 'month'); // month|week|day
+        $customerId = $request->integer('customer_id');
+        $method = $request->get('payment_method');
+        $status = $request->get('status');
+
+        $query = Sale::query();
+        if ($from) { $query->whereDate('sale_date', '>=', $from); }
+        if ($to) { $query->whereDate('sale_date', '<=', $to); }
+        if ($customerId) { $query->where('customer_id', $customerId); }
+        if ($method) { $query->where('payment_method', $method); }
+        if ($status) { $query->where('status', $status); }
+        if (!$from && !$to) {
+            $start = now()->startOfMonth()->subMonths(11);
+            $query->whereDate('sale_date', '>=', $start);
+        }
+
+        $sales = $query->get(['sale_date','total']);
+
+        $buckets = [];
+        foreach ($sales as $s) {
+            $date = $s->sale_date instanceof \DateTimeInterface ? $s->sale_date : Carbon::parse($s->sale_date);
+            switch ($group) {
+                case 'day':
+                    $key = $date->format('Y-m-d'); break;
+                case 'week':
+                    $key = $date->format('o-\WW'); break; // ISO week
+                case 'month':
+                default:
+                    $key = $date->format('Y-m'); break;
+            }
+            $buckets[$key] = ($buckets[$key] ?? 0) + (float)$s->total;
+        }
+
+        if ($group === 'month' && !$from && !$to) {
+            $cursor = now()->startOfMonth()->subMonths(11);
+            for ($i = 0; $i < 12; $i++) {
+                $key = $cursor->copy()->addMonths($i)->format('Y-m');
+                if (!array_key_exists($key, $buckets)) {
+                    $buckets[$key] = 0.0;
+                }
+            }
+        }
+
+        ksort($buckets);
+        return response()->json([
+            'labels' => array_keys($buckets),
+            'data' => array_values($buckets),
+        ]);
+    }
+
+    // JSON: ventas por categoría para gráficos en la vista de reporte
+    public function reportByCategory(Request $request): JsonResponse
+    {
+        $from = $request->date('from');
+        $to = $request->date('to');
+        $customerId = $request->integer('customer_id');
+        $method = $request->get('payment_method');
+        $status = $request->get('status');
+
+        $details = SaleDetail::query()
+            ->with(['sale','product.category'])
+            ->whereHas('sale', function($q) use ($from, $to, $customerId, $method, $status) {
+                if ($from) { $q->whereDate('sale_date', '>=', $from); }
+                if ($to) { $q->whereDate('sale_date', '<=', $to); }
+                if ($customerId) { $q->where('customer_id', $customerId); }
+                if ($method) { $q->where('payment_method', $method); }
+                if ($status) { $q->where('status', $status); }
+            })
+            ->get();
+
+        $totals = [];
+        foreach ($details as $d) {
+            $cat = optional(optional($d->product)->category)->name ?? 'Sin categoría';
+            $totals[$cat] = ($totals[$cat] ?? 0) + (float)$d->subtotal;
+        }
+
+        arsort($totals);
+        return response()->json([
+            'labels' => array_keys($totals),
+            'data' => array_values($totals),
+        ]);
+    }
+
     public function destroy(Sale $sale): RedirectResponse
     {
         if ($sale->status === 'anulada') {

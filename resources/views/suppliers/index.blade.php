@@ -7,7 +7,7 @@
       ['label' => 'Proveedores'],
   ]" />
 
-  <x-ui.page-header title="Proveedores" :icon="'&lt;i class=\'fas fa-truck\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header title="Proveedores" icon="<i class='fas fa-truck'></i>">
     <x-slot name="actions">
       <form method="GET" action="{{ route('suppliers.index') }}" class="join">
         <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar..." class="input input-bordered join-item" />

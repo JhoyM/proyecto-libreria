@@ -8,7 +8,7 @@
       ['label' => $supplier->name],
   ]" />
 
-  <x-ui.page-header :title="$supplier->name" :icon="'&lt;i class=\'fas fa-truck\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header :title="$supplier->name" icon="<i class='fas fa-truck'></i>">
     <x-slot name="actions">
       <a href="{{ route('suppliers.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver

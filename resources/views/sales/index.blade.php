@@ -7,7 +7,7 @@
       ['label' => 'Ventas'],
   ]" />
 
-  <x-ui.page-header title="Ventas" :icon="'&lt;i class=\'fas fa-cash-register\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header title="Ventas" icon="<i class='fas fa-cash-register'></i>">
     <x-slot name="actions">
       <form method="GET" action="{{ route('sales.index') }}" class="join">
         <input type="text" name="q" value="{{ request('q') }}" placeholder="Buscar por N° o cliente..." class="input input-bordered join-item" />

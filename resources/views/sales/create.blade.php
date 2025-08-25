@@ -8,7 +8,7 @@
       ['label' => 'Nueva venta'],
   ]" />
 
-  <x-ui.page-header title="Nueva venta" :icon="'&lt;i class=\'fas fa-cash-register\'&gt;&lt;/i&gt;'">
+  <x-ui.page-header title="Nueva venta" icon="<i class='fas fa-cash-register'></i>">
     <x-slot name="actions">
       <a href="{{ route('sales.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver
