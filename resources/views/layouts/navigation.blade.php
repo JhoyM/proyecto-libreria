@@ -46,6 +46,13 @@
                     </x-nav-link>
                     @endcanany
                     @endif
+                    @if(Route::has('admin.users.index'))
+                    @canany(['users.index','users.create'])
+                    <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                        <i class="fas fa-users mr-2"></i>{{ __('Usuarios') }}
+                    </x-nav-link>
+                    @endcanany
+                    @endif
                 </div>
             </div>
 
@@ -140,6 +147,13 @@
             @canany(['sales.index','sales.create'])
             <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
                 <i class="fas fa-cash-register mr-2"></i>{{ __('Ventas') }}
+            </x-responsive-nav-link>
+            @endcanany
+            @endif
+            @if(Route::has('admin.users.index'))
+            @canany(['users.index','users.create'])
+            <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                <i class="fas fa-users mr-2"></i>{{ __('Usuarios') }}
             </x-responsive-nav-link>
             @endcanany
             @endif

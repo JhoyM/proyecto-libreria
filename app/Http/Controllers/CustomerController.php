@@ -11,6 +11,14 @@ use Illuminate\View\View;
 
 class CustomerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:customers.view')->only(['index', 'show']);
+        $this->middleware('permission:customers.create')->only(['create', 'store']);
+        $this->middleware('permission:customers.update')->only(['edit', 'update']);
+        $this->middleware('permission:customers.delete')->only('destroy');
+    }
+
     /**
      * Display a listing of the resource.
      */

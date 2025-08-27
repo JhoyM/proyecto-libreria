@@ -7,6 +7,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -47,6 +48,12 @@ Route::middleware('auth')->group(function () {
         Route::get('sales/report/by-category', [SalesController::class, 'reportByCategory'])->name('sales.report.by_category');
     });
     Route::resource('sales', SalesController::class)->only(['index','create','store','show','edit','update','destroy']);
+
+    // Módulo de gestión de usuarios (solo para administradores)
+    Route::prefix('admin')->name('admin.')->middleware(['role:Administrador'])->group(function () {
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
+    });
 
     // (Deprecated) Reportes generales separados — dejamos rutas por si hay enlaces guardados
     // Route::middleware(['role:Administrador'])->group(function () {

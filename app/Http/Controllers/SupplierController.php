@@ -11,6 +11,14 @@ use Illuminate\View\View;
 
 class SupplierController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:suppliers.view')->only(['index', 'show']);
+        $this->middleware('permission:suppliers.create')->only(['create', 'store']);
+        $this->middleware('permission:suppliers.update')->only(['edit', 'update']);
+        $this->middleware('permission:suppliers.delete')->only('destroy');
+    }
+
     /**
      * Display a listing of the resource.
      */
