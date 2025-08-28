@@ -20,6 +20,14 @@ use Carbon\Carbon;
 
 class SalesController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:sales.view')->only(['index', 'show', 'report', 'reportByPeriod', 'reportByCategory', 'downloadInvoice']);
+        $this->middleware('permission:sales.create')->only(['create', 'store']);
+        $this->middleware('permission:sales.update')->only(['edit', 'update']);
+        $this->middleware('permission:sales.delete')->only('destroy');
+    }
+
     public function index(Request $request): ViewContract
     {
         $q = trim((string) $request->get('q'));
@@ -368,5 +376,16 @@ class SalesController extends Controller
         });
 
         return redirect()->route('sales.show', $sale)->with('status', 'Venta anulada y stock restaurado.');
+    }
+
+    public function downloadInvoice(Sale $sale)
+    {
+        $sale->load(['customer', 'user', 'details.product']);
+
+        $pdf = Pdf::loadView('sales.invoice', [
+            'sale' => $sale,
+        ]);
+
+        return $pdf->stream('invoice-' . $sale->sale_number . '.pdf');
     }
 }

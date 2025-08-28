@@ -13,6 +13,9 @@
       <a href="{{ route('sales.index') }}" class="btn btn-ghost">
         <i class="fas fa-arrow-left mr-2"></i> Volver
       </a>
+      <a href="{{ route('sales.invoice.pdf', $sale) }}" class="btn btn-outline" target="_blank">
+        <i class="fas fa-file-pdf mr-2"></i> PDF
+      </a>
       @if($sale->status !== 'anulada')
       <a href="{{ route('sales.edit', $sale) }}" class="btn btn-outline">
         <i class="fas fa-edit mr-2"></i> Editar

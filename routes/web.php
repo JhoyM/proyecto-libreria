@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
 
     // Módulo de ventas
     Route::get('sales/report', [SalesController::class, 'report'])->name('sales.report');
+    Route::get('sales/{sale}/pdf', [SalesController::class, 'downloadInvoice'])->name('sales.invoice.pdf');
     Route::middleware(['role:Administrador'])->group(function () {
         Route::get('sales/report/by-period', [SalesController::class, 'reportByPeriod'])->name('sales.report.by_period');
         Route::get('sales/report/by-category', [SalesController::class, 'reportByCategory'])->name('sales.report.by_category');
