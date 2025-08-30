@@ -7,13 +7,14 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {
     protected $categoryTypes = [
-        'libros' => 'Libros',
-        'utiles_escolares' => 'Útiles Escolares',
-        'oficina' => 'Oficina'
+        'libros' => '',
+        'utiles_escolares' => '',
+        'oficina' => ''
     ];
 
     public function __construct()
@@ -22,7 +23,7 @@ class CategoryController extends Controller
         $this->middleware(['permission:categories.create'])->only(['create', 'store']);
         $this->middleware(['permission:categories.update'])->only(['edit', 'update']);
         $this->middleware(['permission:categories.delete'])->only(['destroy']);
-        
+
         // Compartir tipos de categorías con todas las vistas
         view()->share('categoryTypes', $this->categoryTypes);
     }
@@ -34,7 +35,7 @@ class CategoryController extends Controller
     {
         $q = $request->get('q');
         $type = $request->get('type');
-        
+
         $categories = Category::withCount('products')
             ->when($q, function($query) use ($q) {
                 $query->where('name', 'ilike', "%$q%")
@@ -46,7 +47,7 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
-            
+
         return view('categories.index', [
             'categories' => $categories,
             'q' => $q,
@@ -98,19 +99,19 @@ class CategoryController extends Controller
         try {
             // Create the category
             $category = Category::create($data);
-            
+
             DB::commit();
-            
+
             return redirect()
                 ->route('categories.index')
                 ->with('success', 'Categoría creada exitosamente.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Log the error
-            \Log::error('Error al crear categoría: ' . $e->getMessage());
-            
+            Log::error('Error al crear categoría: ' . $e->getMessage());
+
             return back()
                 ->withInput()
                 ->with('error', 'Ocurrió un error al crear la categoría. Por favor, intente nuevamente.');
@@ -126,7 +127,7 @@ class CategoryController extends Controller
             ->with('supplier')
             ->orderBy('name')
             ->paginate(10);
-            
+
         return view('categories.show', [
             'category' => $category,
             'products' => $products,
@@ -175,19 +176,19 @@ class CategoryController extends Controller
         try {
             // Update the category
             $category->update($data);
-            
+
             DB::commit();
-            
+
             return redirect()
                 ->route('categories.index')
                 ->with('success', 'Categoría actualizada exitosamente.');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             // Log the error
-            \Log::error('Error al actualizar categoría: ' . $e->getMessage());
-            
+            Log::error('Error al actualizar categoría: ' . $e->getMessage());
+
             return back()
                 ->withInput()
                 ->with('error', 'Ocurrió un error al actualizar la categoría. Por favor, intente nuevamente.');
